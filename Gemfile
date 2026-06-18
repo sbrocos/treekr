@@ -9,6 +9,10 @@ gem 'sequel',  '~> 5.0'
 gem 'sinatra', '~> 4.0'
 gem 'sqlite3', '~> 2.0'
 
+group :development do
+  gem 'irb'
+end
+
 group :development, :test do
   gem 'brakeman',        require: false
   gem 'rubocop',         require: false
