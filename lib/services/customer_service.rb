@@ -1,7 +1,12 @@
 # frozen_string_literal: true
 
 class CustomerService
-  VISITS_PER_TREE = (ENV['VISITS_PER_TREE'] || 5).to_i
+  VISITS_PER_TREE = begin
+    value = (ENV['VISITS_PER_TREE'] || 5).to_i
+    raise ArgumentError, 'VISITS_PER_TREE must be a positive integer' unless value.positive?
+
+    value
+  end
 
   def initialize(customer_repo:)
     @customer_repo = customer_repo
