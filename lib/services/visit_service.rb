@@ -29,6 +29,11 @@ class VisitService
     true
   end
 
+  def hourly_stats
+    since = Time.now.utc - (24 * 3600)
+    @visit_repo.by_hour(since:)
+  end
+
   private
 
   def validate_customer_id(customer_id)
