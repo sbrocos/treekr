@@ -16,17 +16,6 @@ class VisitService
     @visit_repo.create(customer_id:, device_id:, visited_at: now)
     @customer_repo.upsert(id: customer_id, total_visits:, last_connection: now)
 
-    {
-      customer_id:,
-      total_visits:,
-      trees_planted: trees_planted(total_visits),
-      last_connection: now.iso8601
-    }
-  end
-
-  private
-
-  def trees_planted(total_visits)
-    total_visits / VISITS_PER_TREE
+    nil
   end
 end
