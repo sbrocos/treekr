@@ -86,4 +86,18 @@ RSpec.describe VisitService do
       end
     end
   end
+
+  describe '#hourly_stats' do
+    it 'calls visit_repo.by_hour with a since 24 hours ago' do
+      allow(visit_repo).to receive(:by_hour).and_return({})
+      service.hourly_stats
+      expect(visit_repo).to have_received(:by_hour).with(since: instance_of(Time))
+    end
+
+    it 'returns the result from visit_repo.by_hour' do
+      data = { '2026-06-19T10:00:00Z' => 3 }
+      allow(visit_repo).to receive(:by_hour).and_return(data)
+      expect(service.hourly_stats).to eq(data)
+    end
+  end
 end
