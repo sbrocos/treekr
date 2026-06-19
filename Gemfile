@@ -14,7 +14,6 @@ group :development do
 end
 
 group :development, :test do
-  gem 'brakeman',        require: false
   gem 'rubocop',         require: false
   gem 'rubocop-rspec',   require: false
   gem 'rubocop-sequel',  require: false
