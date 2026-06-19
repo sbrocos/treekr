@@ -1,5 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><title>treekr</title></head>
-<body><h1>treekr</h1></body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>treekr</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f4f6f0;
+      color: #1a1a1a;
+      padding: 2rem;
+    }
+
+    header {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    h1 { font-size: 1.75rem; font-weight: 700; color: #2d6a4f; }
+
+    #last-updated {
+      font-size: 0.8rem;
+      color: #777;
+    }
+
+    section {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #2d6a4f;
+    }
+
+    .chart-wrapper { position: relative; height: 220px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th {
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      border-bottom: 2px solid #e0e0e0;
+      color: #555;
+      font-weight: 600;
+    }
+
+    td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .empty { color: #aaa; font-style: italic; text-align: center; padding: 1rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🌳 treekr</h1>
+    <span id="last-updated"></span>
+  </header>
+
+  <section>
+    <h2>Visits per hour — last 24h</h2>
+    <div class="chart-wrapper">
+      <canvas id="hourly-chart"></canvas>
+    </div>
+  </section>
+
+  <section>
+    <h2>Customers</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Customer ID</th>
+          <th>Total visits</th>
+          <th>Trees planted</th>
+          <th>Last connection</th>
+        </tr>
+      </thead>
+      <tbody id="customers-body"></tbody>
+    </table>
+  </section>
+
+  <script>
+    const chart = new Chart(document.getElementById('hourly-chart'), {
+      type: 'bar',
+      data: { labels: [], datasets: [{ label: 'Visits', data: [], backgroundColor: '#52b788' }] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+      }
+    });
+
+    async function loadHourlyStats() {
+      const res = await fetch('/api/stats/hourly');
+      const data = await res.json();
+      chart.data.labels = data.map(b => b.hour.slice(11, 16));
+      chart.data.datasets[0].data = data.map(b => b.visits);
+      chart.update();
+    }
+
+    async function loadCustomers() {
+      const res = await fetch('/api/customers');
+      const customers = await res.json();
+      const tbody = document.getElementById('customers-body');
+
+      if (customers.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="empty">No customers yet</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = customers.map(c => `
+        <tr>
+          <td>${c.id}</td>
+          <td>${c.total_visits}</td>
+          <td>${c.trees_planted} 🌳</td>
+          <td>${new Date(c.last_connection).toLocaleString()}</td>
+        </tr>
+      `).join('');
+    }
+
+    function updateTimestamp() {
+      document.getElementById('last-updated').textContent =
+        'Updated ' + new Date().toLocaleTimeString();
+    }
+
+    async function refresh() {
+      await Promise.all([loadHourlyStats(), loadCustomers()]);
+      updateTimestamp();
+    }
+
+    refresh();
+    setInterval(refresh, 30000);
+  </script>
+</body>
 </html>
