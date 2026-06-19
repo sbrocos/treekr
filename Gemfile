@@ -5,6 +5,7 @@ source 'https://rubygems.org'
 ruby '~> 4.0'
 
 gem 'puma',    '~> 6.0'
+gem 'rackup',  '~> 2.0'
 gem 'sequel',  '~> 5.0'
 gem 'sinatra', '~> 4.0'
 gem 'sqlite3', '~> 2.0'
