@@ -14,6 +14,7 @@ RSpec.describe VisitService do
   before do
     allow(visit_repo).to receive(:create)
     allow(customer_repo).to receive(:upsert)
+    allow(customer_repo).to receive(:transaction).and_yield
   end
 
   describe '#record' do
@@ -43,6 +44,15 @@ RSpec.describe VisitService do
       end
     end
 
+    it 'calls upsert before create' do
+      allow(customer_repo).to receive(:find).and_return(nil)
+      order = []
+      allow(customer_repo).to receive(:upsert) { order << :upsert }
+      allow(visit_repo).to receive(:create)    { order << :create }
+      service.record(customer_id: 'c1', device_id: 'd1')
+      expect(order).to eq(%i[upsert create])
+    end
+
     it 'calls visit_repo.create with customer_id, device_id and a Time' do
       allow(customer_repo).to receive(:find).and_return(nil)
       service.record(customer_id: 'c1', device_id: 'd1')
@@ -51,9 +61,29 @@ RSpec.describe VisitService do
       )
     end
 
-    it 'returns nil' do
+    it 'returns true on success' do
       allow(customer_repo).to receive(:find).and_return(nil)
-      expect(service.record(customer_id: 'c1', device_id: 'd1')).to be_nil
+      expect(service.record(customer_id: 'c1', device_id: 'd1')).to be(true)
+    end
+
+    context 'when customer_id is invalid' do
+      it 'raises ArgumentError if customer_id is nil' do
+        expect { service.record(customer_id: nil, device_id: 'd1') }.to raise_error(ArgumentError, /customer_id/)
+      end
+
+      it 'raises ArgumentError if customer_id is blank' do
+        expect { service.record(customer_id: '  ', device_id: 'd1') }.to raise_error(ArgumentError, /customer_id/)
+      end
+    end
+
+    context 'when device_id is invalid' do
+      it 'raises ArgumentError if device_id is nil' do
+        expect { service.record(customer_id: 'c1', device_id: nil) }.to raise_error(ArgumentError, /device_id/)
+      end
+
+      it 'raises ArgumentError if device_id is blank' do
+        expect { service.record(customer_id: 'c1', device_id: '') }.to raise_error(ArgumentError, /device_id/)
+      end
     end
   end
 end

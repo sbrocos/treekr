@@ -31,3 +31,14 @@ Metrics/MethodLength:
 
 RSpec/MultipleExpectations:
   Max: 5
+
+RSpec/ExampleLength:
+  Max: 8
+
+Naming/PredicateMethod:
+  Exclude:
+    - 'lib/services/**/*'
+
+RSpec/VerifiedDoubles:
+  Exclude:
+    - 'spec/repositories/**/*'

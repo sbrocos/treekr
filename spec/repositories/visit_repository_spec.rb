@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require_relative '../../lib/errors'
 require_relative '../../lib/repositories/visit_repository'
 
 RSpec.describe VisitRepository do
@@ -16,6 +17,13 @@ RSpec.describe VisitRepository do
 
       expect(result[:customer_id]).to eq('c1')
       expect(result[:device_id]).to eq('d1')
+    end
+
+    it 'raises PersistenceError if Sequel fails' do
+      failing_db = double('db')
+      allow(failing_db).to receive(:[]).and_raise(Sequel::Error)
+      expect { described_class.new(failing_db).create(customer_id: 'c1', device_id: 'd1', visited_at: Time.now.utc) }
+        .to raise_error(PersistenceError)
     end
   end
 
@@ -36,6 +44,13 @@ RSpec.describe VisitRepository do
       result = repo.by_hour(since: Time.now.utc - 3600)
 
       expect(result.values.sum).to eq(1)
+    end
+
+    it 'raises PersistenceError if Sequel fails' do
+      failing_db = double('db')
+      allow(failing_db).to receive(:[]).and_raise(Sequel::Error)
+      expect { described_class.new(failing_db).by_hour(since: Time.now.utc) }
+        .to raise_error(PersistenceError)
     end
   end
 end
