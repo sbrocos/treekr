@@ -1,0 +1,13 @@
+services:
+  web:
+    build: .
+    ports:
+      - "4567:4567"
+    environment:
+      - VISITS_PER_TREE=5
+      - DATABASE_URL=sqlite:///data/treekr.db
+    volumes:
+      - db_data:/data
+
+volumes:
+  db_data:
